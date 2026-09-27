@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111">
+<title>Minha Rotina de Saúde</title>
+<style>
+:root{--bg:#f5f5f7;--card:#fff;--ink:#111;--muted:#727272;--gold:#c9a227;--line:#e7e7e7;--green:#247a3b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}
+header{background:#111;color:#fff;padding:26px 18px 20px;border-bottom:3px solid var(--gold);position:sticky;top:0;z-index:5}
+.head{max-width:900px;margin:auto}.brand{font-size:25px;font-weight:800}.sub{color:#cfcfcf;margin-top:4px;font-size:14px}
+main{max-width:900px;margin:auto;padding:15px 15px 35px}.hero{background:linear-gradient(135deg,#171717,#303030);color:#fff;border-radius:22px;padding:20px;margin-bottom:14px}
+.hero .day{font-size:14px;color:#d5d5d5}.hero h2{margin:5px 0 3px;font-size:25px}.progress{height:9px;background:#555;border-radius:10px;margin-top:15px;overflow:hidden}.bar{height:100%;background:var(--gold);width:0;transition:.3s}
+.stats{display:flex;justify-content:space-between;margin-top:9px;font-size:13px;color:#ddd}
+.nav{display:flex;gap:8px;margin:12px 0;overflow:auto}.nav button{white-space:nowrap}
+button{border:0;border-radius:12px;padding:11px 14px;font-weight:700;font-size:14px;cursor:pointer}.dark{background:#111;color:#fff}.light{background:#fff;border:1px solid var(--line)}.gold{background:var(--gold);color:#111}
+.card{background:var(--card);border-radius:19px;padding:17px;margin:12px 0;box-shadow:0 3px 18px #0000000a}.title{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.title h3{margin:0;font-size:18px}
+.item{display:flex;gap:12px;align-items:center;border:1px solid var(--line);border-radius:15px;padding:13px;margin:9px 0}.item.done{background:#f0f8f1;border-color:#b9d9c0}.check{width:26px;height:26px;accent-color:#111}.info{flex:1}.name{font-weight:800}.dose{font-size:13px;color:#555;margin-top:3px}.meta{font-size:12px;color:#777;margin-top:6px}.pill{display:inline-block;background:#f2ecd9;color:#66500d;padding:4px 7px;border-radius:8px;margin-right:5px}
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.dow{text-align:center;color:#777;font-size:11px;padding-bottom:4px}.calday{min-height:43px;border:1px solid var(--line);border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;position:relative}.calday.today{border:2px solid var(--gold)}.dot{position:absolute;bottom:5px;width:5px;height:5px;border-radius:50%;background:#247a3b}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field label{font-size:12px;color:#666}.field input,.field select{width:100%;padding:12px;border:1px solid #ddd;border-radius:11px;margin-top:5px;background:#fff;font-size:15px}
+.notice{font-size:12px;color:#666;line-height:1.5;background:#f7f7f7;border-radius:12px;padding:12px}.empty{text-align:center;color:#777;padding:20px}
+@media(max-width:560px){.grid{grid-template-columns:1fr}.item{align-items:flex-start}}
+</style>
+</head>
+<body>
+<header><div class="head"><div class="brand">Minha Rotina de Saúde</div><div class="sub">Seu controle diário de vitaminas e medicamentos</div></div></header>
+<main>
+<section class="hero">
+<div class="day" id="longDate"></div><h2>Minha rotina de hoje</h2>
+<div id="summary">0 de 0 concluídos</div><div class="progress"><div class="bar" id="bar"></div></div>
+<div class="stats"><span id="percent">0%</span><span id="remaining">Tudo pendente</span></div>
+</section>
+
+<div class="nav"><button class="dark" onclick="show('today')">Hoje</button><button class="light" onclick="show('calendar')">📅 Calendário</button><button class="light" onclick="show('manage')">⚙️ Gerenciar</button></div>
+
+<div id="todayView">
+<section class="card"><div class="title"><h3>💊 Para hoje</h3><button class="light" onclick="resetDay()">Limpar marcações</button></div><div id="list"></div></section>
+<section class="card"><div class="title"><h3>📝 Observação</h3></div>
+<div class="notice">Os horários não foram preenchidos automaticamente porque o documento médico informa doses e frequências, mas não estabelece um horário específico do dia. Você pode adicionar um horário no cadastro.</div></section>
+</div>
+
+<div id="calendarView" style="display:none">
+<section class="card"><div class="title"><button class="light" onclick="changeMonth(-1)">‹</button><h3 id="monthTitle"></h3><button class="light" onclick="changeMonth(1)">›</button></div><div class="calendar" id="calendar"></div></section>
+</div>
+
+<div id="manageView" style="display:none">
+<section class="card"><div class="title"><h3>➕ Adicionar item</h3></div>
+<div class="grid">
+<div class="field"><label>Nome</label><input id="n" placeholder="Ex.: Vitamina C"></div>
+<div class="field"><label>Dose</label><input id="d" placeholder="Ex.: 500 mg"></div>
+<div class="field"><label>Frequência</label><select id="f"><option>Todos os dias</option><option>1x por semana</option><option>A cada 2 semanas</option><option>Conforme necessidade</option></select></div>
+<div class="field"><label>Horário (opcional)</label><input id="t" type="time"></div>
+</div><br><button class="gold" onclick="add()">Adicionar à rotina</button></section>
+<section class="card"><div class="title"><h3>📋 Minha lista</h3></div><div id="manageList"></div></section>
+<section class="card"><div class="notice"><b>Importante:</b> este site é um organizador pessoal. Ele não substitui a prescrição ou orientação do seu médico. Não altere doses ou frequência por conta própria.</div></section>
+</div>
+</main>
+<script>
+const base=[
+{name:"Vitamina B12 (Cyanocobalamin)",dose:"1000 mcg — 1 comprimido por dia",freq:"Todos os dias"},
+{name:"Ferro (Ferrous Sulfate)",dose:"325 mg — 1 comprimido, 2 vezes ao dia",freq:"Todos os dias"},
+{name:"Vitamina D (Drisdol)",dose:"1.25 mg / 50.000 UI — conforme receita",freq:"1x por semana"},
+{name:"Colace (Docusate Sodium)",dose:"100 mg — 1 cápsula, 2 vezes ao dia quando necessário",freq:"Conforme necessidade"},
+{name:"Testosterona Cypionate",dose:"200 mg/mL — 1 mL intramuscular",freq:"A cada 2 semanas"}
+];
+let items=JSON.parse(localStorage.getItem("routineItems")||"null")||base;
+let month=new Date();month.setDate(1);
+const iso=d=>{let x=new Date(d.getTime()-d.getTimezoneOffset()*60000);return x.toISOString().slice(0,10)};
+const today=()=>new Date();
+function key(date= today()){return "taken_"+iso(date)}
+function getTaken(date=today()){return JSON.parse(localStorage.getItem(key(date))||"[]")}
+function applicable(x,date=today()){
+if(x.freq==="Todos os dias"||x.freq==="Conforme necessidade")return true;
+if(x.freq==="1x por semana")return date.getDay()===1;
+if(x.freq==="A cada 2 semanas"){let start=new Date(2026,8,21);let diff=Math.floor((new Date(date.getFullYear(),date.getMonth(),date.getDate())-start)/86400000);return diff>=0&&diff%14===0}
+return true}
+function render(){
+let d=today(), applicableItems=items.map((x,i)=>({x,i})).filter(o=>applicable(o.x,d)),taken=getTaken(d);
+document.getElementById("longDate").textContent=d.toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
+let done=applicableItems.filter(o=>taken.includes(o.i)).length,total=applicableItems.length;
+document.getElementById("summary").textContent=`${done} de ${total} concluídos`;
+document.getElementById("percent").textContent=(total?Math.round(done/total*100):0)+"%";
+document.getElementById("remaining").textContent=total-done?`${total-done} pendente(s)`:"Tudo concluído 🎉";
+document.getElementById("bar").style.width=(total?done/total*100:0)+"%";
+let list=document.getElementById("list");list.innerHTML="";
+if(!total)list.innerHTML='<div class="empty">Nenhum item programado para hoje.</div>';
+applicableItems.forEach(o=>{let z=o.x,el=document.createElement("div");el.className="item"+(taken.includes(o.i)?" done":"");el.innerHTML=`<input class="check" type="checkbox" ${taken.includes(o.i)?"checked":""} onchange="toggle(${o.i})"><div class="info"><div class="name">${z.name}</div><div class="dose">${z.dose}</div><div class="meta"><span class="pill">${z.freq}</span>${z.time?"⏰ "+z.time:"Horário não definido"}</div></div>`;list.appendChild(el)});
+renderManage();renderCalendar();
+}
+function toggle(i){let a=getTaken();a=a.includes(i)?a.filter(x=>x!==i):[...a,i];localStorage.setItem(key(),JSON.stringify(a));render()}
+function resetDay(){localStorage.removeItem(key());render()}
+function add(){let n=document.getElementById("n").value.trim();if(!n)return alert("Digite o nome.");items.push({name:n,dose:document.getElementById("d").value||"Dose não informada",freq:document.getElementById("f").value,time:document.getElementById("t").value});localStorage.setItem("routineItems",JSON.stringify(items));document.getElementById("n").value="";document.getElementById("d").value="";document.getElementById("t").value="";render()}
+function remove(i){if(confirm("Remover este item da sua lista?")){items.splice(i,1);localStorage.setItem("routineItems",JSON.stringify(items));render()}}
+function renderManage(){let el=document.getElementById("manageList");el.innerHTML="";items.forEach((x,i)=>{let d=document.createElement("div");d.className="item";d.innerHTML=`<div class="info"><div class="name">${x.name}</div><div class="dose">${x.dose}</div><div class="meta">${x.freq}${x.time?" • ⏰ "+x.time:""}</div></div><button class="light" onclick="remove(${i})">Remover</button>`;el.appendChild(d)})}
+function renderCalendar(){
+let y=month.getFullYear(),m=month.getMonth(),name=month.toLocaleDateString("pt-BR",{month:"long",year:"numeric"});document.getElementById("monthTitle").textContent=name.charAt(0).toUpperCase()+name.slice(1);
+let el=document.getElementById("calendar");el.innerHTML=["D","S","T","Q","Q","S","S"].map(x=>`<div class="dow">${x}</div>`).join("");
+let first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate();
+for(let i=0;i<first;i++)el.innerHTML+="<div></div>";
+for(let n=1;n<=days;n++){let d=new Date(y,m,n),done=getTaken(d).length,cl=iso(d)===iso(today())?"today":"";el.innerHTML+=`<div class="calday ${cl}" title="${done} marcação(ões)">${n}${done?'<span class="dot"></span>':""}</div>`}
+}
+function changeMonth(x){month.setMonth(month.getMonth()+x);renderCalendar()}
+function show(v){document.getElementById("todayView").style.display=v==="today"?"block":"none";document.getElementById("calendarView").style.display=v==="calendar"?"block":"none";document.getElementById("manageView").style.display=v==="manage"?"block":"none"}
+render();
+</script>
+</body></html>
